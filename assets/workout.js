@@ -114,7 +114,8 @@
           <svg class="tread" viewBox="0 0 220 70" aria-hidden="true"><path d="M10 58 L190 40" stroke="currentColor" stroke-width="8" stroke-linecap="round"/><path d="M178 40 L196 6" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><path d="M188 8 h22" stroke="currentColor" stroke-width="6" stroke-linecap="round"/><circle cx="20" cy="60" r="6" fill="currentColor"/><circle cx="180" cy="44" r="6" fill="currentColor"/></svg>
         </article>` : ""}
         ${W.notes && W.notes.length ? `<article class="cnotes" dir="ltr"><h3>${t("notes")}</h3><ul>${W.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul></article>` : ""}
-        <div class="savebar"><button type="button" class="savebtn" id="wsave">${t("save")}</button><p class="smsg" id="smsg" role="status" aria-live="polite">${tail ? t("savedOn", { d: esc(tail.d) }) : ""}</p></div>
+        <div class="savebar"><button type="button" class="savebtn" id="wsave">${t("save")}</button><p class="smsg" id="smsg" role="status" aria-live="polite">${tail ? t("savedOn", { d: esc(tail.d) }) : ""}</p>
+          ${window.SITE && window.SITE.whatsapp ? `<button type="button" class="wabtn" id="wsend" ${tail && tail.d === td ? "" : "hidden"}><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm4.5 12.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4a.5.5 0 0 0 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.4.8 3.2.6a2.8 2.8 0 0 0 1.8-1.3 2.3 2.3 0 0 0 .2-1.3c-.1-.1-.3-.2-.6-.3Z"/></svg>${t("sendCoach")}</button>` : ""}</div>
         <p class="devnote">${t("device")}</p>
         <article class="hist"><h3>${t("history")}</h3>${hist.length ? `<ul>${hist.map(s => { const v = Object.values(s.ex).flat().reduce((a, x) => a + (num(x && x[0]) || 0) * (num(x && x[1]) || 0), 0);
           return `<li><span>${esc(s.d)}</span><b dir="ltr">${Math.round(v).toLocaleString("en-US")} kg</b></li>`; }).join("")}</ul>` : `<p>${t("noHistory")}</p>`}</article>
@@ -157,8 +158,30 @@
         if (!now || !before) { c.textContent = ""; return; } const a = bestSet(now), b = bestSet(before);
         c.className = "cmp " + (a.sc > b.sc ? "up" : a.sc < b.sc ? "down" : "eq"); c.textContent = a.sc > b.sc ? t("better") : a.sc < b.sc ? t("lower") : t("same"); });
       const m = root.querySelector("#smsg"); m.textContent = ok ? t("saved") : "⚠"; m.classList.add("ok");
+      sendCoach(sess);
       document.body.classList.add("party"); setTimeout(() => document.body.classList.remove("party"), 1600);
     });
+    function waText(sess) {
+      const L = [`🏋️ ${W.client} — ${W.title || "Workout"}`, `📅 ${sess.d}`, ""];
+      list.forEach(e => { const now = sess.ex[e.key]; if (!now) return;
+        const sets = now.filter(x => x && (x[0] !== "" || x[1] !== "")).map(x => `${x[0] || "BW"}×${x[1] || "–"}`).join(", ");
+        const before = last && last.ex[e.key]; let mark = "";
+        if (before) { const a = bestSet(now).sc, b = bestSet(before).sc; mark = a > b ? " ▲" : a < b ? " ▼" : " ="; }
+        L.push(`• ${e.name}: ${sets}${mark}`); });
+      const skipped = list.filter(e => !sess.ex[e.key]).map(e => e.name);
+      if (skipped.length) L.push("", `Not logged: ${skipped.join(", ")}`);
+      if (W.cardio) L.push("", `Cardio (${W.cardio.minutes} min): ${sess.cardio ? "done ✅" : "not done"}`);
+      return L.join("\n");
+    }
+    function sendCoach(sess) {
+      if (!window.SITE || !window.SITE.whatsapp || !sess) return;
+      const url = "https://wa.me/" + window.SITE.whatsapp.replace(/\D/g, "") + "?text=" + encodeURIComponent(waText(sess));
+      const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; document.body.appendChild(a); a.click(); a.remove();
+      const b = root.querySelector("#wsend"); if (b) b.hidden = false;
+      const m = root.querySelector("#smsg"); if (m) m.textContent = t("sentNote");
+    }
+    const ws = root.querySelector("#wsend");
+    if (ws) ws.addEventListener("click", () => { const tl = log.sessions[log.sessions.length - 1]; if (tl && tl.d === td) sendCoach(tl); });
     progress();
   }
   function render(root, W, id, gender, onBack) {
