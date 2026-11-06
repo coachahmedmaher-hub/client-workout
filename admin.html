@@ -9,10 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;600;700&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/style.css?v=4">
+<link rel="stylesheet" href="assets/style.css?v=7">
 <style>
   body{-webkit-user-select:auto;user-select:auto;font-family:"IBM Plex Sans Arabic",var(--body)}
-  .adm{max-width:1000px;margin:0 auto;padding:24px 16px 40px;display:grid;gap:16px}
+  .adm{max-width:1060px;margin:0 auto;padding:24px 16px 40px;display:grid;gap:16px}
   .adm h1{font-size:38px;font-family:"IBM Plex Sans Arabic",sans-serif}
   .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:12px}
   .box h2{font-size:20px;font-family:"IBM Plex Sans Arabic",sans-serif;text-transform:none}
@@ -23,7 +23,7 @@
   .ltr{direction:ltr;text-align:left}
   .mono{font-family:"IBM Plex Mono",monospace;letter-spacing:.05em}
   .tbl{display:grid;gap:8px;overflow-x:auto}
-  .er{display:grid;grid-template-columns:28px 2fr 1.4fr 60px 80px 80px 1.6fr 1.3fr 54px 34px;gap:6px;align-items:center;min-width:920px}
+  .er{display:grid;grid-template-columns:28px 2fr 1.4fr 56px 80px 80px 1.5fr 1.3fr 1.2fr 50px 34px;gap:6px;align-items:center;min-width:1040px}
   .er .alt{grid-column:2 / -1;display:grid;grid-template-columns:auto 1.4fr 70px 2fr 1.4fr;gap:6px;align-items:center;font-size:12.5px;color:var(--accent);padding-bottom:8px;border-bottom:1px dashed var(--line)}
   .er .n{font-weight:700;color:var(--muted);text-align:center}
   .er input[type=checkbox]{width:18px;height:18px}
@@ -31,6 +31,9 @@
   .btn{border:0;border-radius:10px;background:var(--accent);color:#fff;font:700 15px/1 inherit;font-family:inherit;padding:12px 18px;cursor:pointer}
   .btn.alt{background:var(--card2);color:var(--ink);border:1px solid var(--line)}
   .btns{display:flex;flex-wrap:wrap;gap:10px}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .tab{border:2px solid var(--line);background:var(--card2);color:var(--ink);border-radius:10px;padding:9px 14px;font:700 14px/1 inherit;font-family:inherit;cursor:pointer}
+  .tab.on{border-color:var(--accent);background:var(--soft)}
   .out{background:var(--soft);border-radius:10px;padding:14px;display:none;gap:6px}
   .out code{font-family:"IBM Plex Mono",monospace;direction:ltr;display:inline-block;background:var(--card);padding:2px 8px;border-radius:5px}
   .err{color:var(--bad);font-weight:600;min-height:20px}
@@ -40,56 +43,59 @@
 </head>
 <body>
 <div class="adm">
-  <div><span class="role">Coach tools</span><h1>صانع التمارين</h1><p style="margin:4px 0 0;color:var(--ink2)">الصفحة دي ليك انت بس. اكتب التمرين، واعمل الملف، وارفعه في فولدر <code class="ltr">workouts</code>.</p></div>
+  <div><span class="role">Coach tools</span><h1>صانع التمارين</h1><p style="margin:4px 0 0;color:var(--ink2)">الصفحة دي ليك انت بس. اكتب التمرين (يوم واحد أو كذا يوم)، واعمل الملف، وارفعه في فولدر <code class="ltr">workouts</code>.</p></div>
 
   <div class="box">
     <h2>العميل</h2>
     <div class="grid">
       <div class="row"><label for="client">اسم العميل</label><input id="client" class="ltr" value="Hiba"></div>
-      <div class="row"><label for="code">الكود</label><div style="display:flex;gap:6px"><input id="code" class="ltr mono"><button class="btn alt" id="gen" type="button">كود جديد</button></div></div>
-      <div class="row"><label for="gender">الشكل الافتراضي</label><select id="gender"><option value="f">بناتي (Woman)</option><option value="m">رجالي (Man)</option></select><small>العميل يقدر يغيّره من الموقع.</small></div>
+      <div class="row"><label for="code">الكود</label><div style="display:flex;gap:6px"><input id="code" class="ltr mono"><button class="btn alt" id="gen" type="button">كود جديد</button></div><small>تقدر تكتب نفس كود العميل في موقع التغذية.</small></div>
+      <div class="row"><label for="gender">الشكل الافتراضي</label><select id="gender"><option value="f">بناتي (Woman)</option><option value="m">رجالي (Man)</option></select><small>العميل بيختار بنفسه في الموقع.</small></div>
     </div>
+    <div class="row"><label for="restNote">ملاحظة أيام الراحة (اختياري)</label><input id="restNote" class="ltr" placeholder="Rest days: after Day 3 and after Day 5"></div>
   </div>
 
   <div class="box">
-    <h2>اليوم</h2>
+    <h2>الأيام</h2>
+    <div class="tabs" id="tabs"></div>
     <div class="grid">
-      <div class="row"><label for="title">اسم التمرين</label><input id="title" class="ltr" value="Leg Day"></div>
-      <div class="row"><label for="subtitle">سطر وصف (اختياري)</label><input id="subtitle" class="ltr" value="Hamstrings first · Glutes · Quads · Calves"></div>
+      <div class="row"><label for="title">اسم اليوم</label><input id="title" class="ltr"></div>
+      <div class="row"><label for="subtitle">سطر وصف (اختياري)</label><input id="subtitle" class="ltr"></div>
     </div>
-    <div class="row"><label for="warmup">الإحماء (اختياري — لو فاضي هيظهر إحماء عام)</label><input id="warmup" class="ltr" value="5 min easy bike + 15 glute bridges + 10 bodyweight squats"></div>
+    <div class="row"><label for="warmup">الإحماء (اختياري — لو فاضي هيظهر إحماء عام)</label><input id="warmup" class="ltr"></div>
   </div>
 
   <div class="box">
-    <h2>التمارين</h2>
-    <small>العضلات بالإنجليزي ومفصولة بفاصلة: Hamstrings, Glutes, Quads, Calves, Abductors, Adductors, Core, Lower Back. الفيديو اختياري: لو فاضي، الزرار هيفتح بحث يوتيوب باسم التمرين.</small>
+    <h2>تمارين اليوم</h2>
+    <small>العضلات بالإنجليزي ومفصولة بفاصلة: Chest, Back, Shoulders, Rear Delts, Biceps, Triceps, Forearms, Traps, Lower Traps, Core, Lower Back, Glutes, Hamstrings, Quads, Calves, Abductors, Adductors, Tibialis.
+      «خطة الأوزان» اختيارية، تتكتب كده: <code class="ltr">20x12, 25x10, 25x10</code> (وBW لوزن الجسم). الفيديو اختياري: لو فاضي، الزرار هيفتح بحث يوتيوب.</small>
     <div class="tbl">
-      <div class="er th"><span></span><span>التمرين</span><span>العضلات</span><span>مجموعات</span><span>تكرارات</span><span>راحة</span><span>ملاحظة</span><span>لينك فيديو</span><span>لكل جانب</span><span></span></div>
+      <div class="er th"><span></span><span>التمرين</span><span>العضلات</span><span>مجموعات</span><span>تكرارات</span><span>راحة</span><span>ملاحظة</span><span>خطة الأوزان</span><span>لينك فيديو</span><span>لكل جانب</span><span></span></div>
       <div id="rows"></div>
     </div>
     <div><button class="btn alt" id="add" type="button">+ تمرين</button></div>
-    <h2>تمرين الكور</h2>
+    <h2>تمرين الكور (اختياري)</h2>
     <div class="tbl"><div id="corerow"></div></div>
-    <h2>الكارديو</h2>
+    <h2>الكارديو (اختياري)</h2>
     <div class="grid">
-      <div class="row"><label for="cm">الجهاز</label><input id="cm" class="ltr" value="Treadmill — incline walk"></div>
-      <div class="row"><label for="cmin">دقائق</label><input id="cmin" class="ltr" value="20"></div>
-      <div class="row"><label for="cs">السرعة (كم/س)</label><input id="cs" class="ltr" value="5.5"></div>
-      <div class="row"><label for="ci">الميل %</label><input id="ci" class="ltr" value="6"></div>
+      <div class="row"><label for="cm">الجهاز</label><input id="cm" class="ltr"></div>
+      <div class="row"><label for="cmin">دقائق</label><input id="cmin" class="ltr"></div>
+      <div class="row"><label for="cs">السرعة (كم/س)</label><input id="cs" class="ltr"></div>
+      <div class="row"><label for="ci">الميل %</label><input id="ci" class="ltr"></div>
     </div>
-    <div class="row"><label for="notes">ملاحظاتك — كل سطر نقطة (اختياري)</label><textarea id="notes" rows="3" class="ltr">Leave 1–2 reps in the tank on every set — no failure.
-If all sets hit the top of the rep range with good form, go a little heavier next time.
-Drink water between exercises.</textarea></div>
   </div>
 
   <div class="box">
+    <div class="row"><label for="notes">ملاحظاتك العامة — كل سطر نقطة، وبتظهر في كل الأيام (اختياري)</label><textarea id="notes" rows="4" class="ltr">Leave 1–2 reps in the tank on every set — no failure.
+If all sets hit the top of the rep range with good form, go a little heavier next time.
+Drink water between exercises.</textarea></div>
     <div class="err" id="err" role="alert"></div>
     <div class="btns"><button class="btn alt" id="preview" type="button">معاينة</button><button class="btn" id="make" type="button">اعمل ملف التمرين</button></div>
     <div class="out" id="out"></div>
     <details><summary style="cursor:pointer;font-weight:600">تعديل تمرين قديم</summary>
       <div class="grid" style="margin-top:10px"><div class="row"><label for="oldcode">كود العميل</label><input id="oldcode" class="ltr mono"></div>
       <div class="row"><label for="oldfile">ملف التمرين (.json)</label><input type="file" id="oldfile" accept=".json"></div></div>
-      <small>اختار الملف واكتب الكود، وهيتملا الفورم بالتمرين القديم.</small>
+      <small>اكتب الكود الأول، وبعدين اختار الملف، وهيتملا الفورم بالتمرين القديم.</small>
     </details>
   </div>
 
@@ -99,55 +105,89 @@ Drink water between exercises.</textarea></div>
 <main id="workout" hidden></main>
 <div id="restpill" hidden><span>Rest</span><b>1:00</b><button type="button">Skip</button></div>
 
-<script src="assets/config.js?v=4"></script>
-<script src="assets/i18n.js?v=4"></script>
-<script src="assets/crypto.js?v=4"></script>
-<script src="assets/anatomy.js?v=4"></script>
-<script src="assets/workout.js?v=4"></script>
+<script src="assets/config.js?v=7"></script>
+<script src="assets/i18n.js?v=7"></script>
+<script src="assets/crypto.js?v=7"></script>
+<script src="assets/photos.js?v=7"></script>
+<script src="assets/anatomy.js?v=7"></script>
+<script src="assets/workout.js?v=7"></script>
 <script>
 (function () {
   const $ = id => document.getElementById(id);
-  const TEMPLATE = [
-    ["Seated Leg Curl", "Hamstrings", 3, "12–15", "60 sec", "Hamstrings first. Slow 3-second lowering, toes pointed up.", "", false],
-    ["Dumbbell Romanian Deadlift", "Hamstrings, Glutes", 3, "10–12", "90 sec", "Push the hips back, dumbbells close to the legs, back flat.", "", false],
-    ["Hip Thrust Machine", "Glutes", 3, "10–12", "90 sec", "Chin tucked, squeeze the glutes 2 seconds at the top.", "https://www.youtube.com/shorts/CO3V68I7CbE?feature=share", false],
-    ["Hack Squat", "Quads, Glutes", 3, "10–12", "90 sec", "Feet shoulder-width, go as deep as you control. (Replaces the leg press.)", "", false, ["Swiss Ball Wall Squat", "12–15", "Ball between your lower back and the wall, feet a little forward. Sit down to knee level, push up through the heels.", "https://youtu.be/vujBdEdSj5M"]],
-    ["Dumbbell Reverse Lunge", "Quads, Glutes", 2, "10", "60 sec", "Step back, front knee over the foot. Reps per leg.", "", true],
-    ["Leg Extension", "Quads", 3, "12–15", "60 sec", "Pause 1 second at the top.", "", false],
-    ["Hip Abduction Machine", "Abductors, Glutes", 3, "15–20", "45 sec", "Lean slightly forward, push the knees out and hold 1 second.", "", false],
-    ["Standing Calf Raise", "Calves", 3, "15", "45 sec", "Full stretch at the bottom, pause at the top.", "", false],
-    ["Tibialis Raise", "Tibialis", 3, "15–20", "45 sec", "Back against the wall, heels about a foot forward. Lift the toes as high as you can, lower slowly.", "", false]
-  ];
-  const CORE = ["Dead Bug", "Core", 3, "10", "45 sec", "Lower back pressed into the floor. Reps per side.", "", true];
-  const rowHTML = (r, i, core) => `<div class="er" data-core="${core ? 1 : 0}"><span class="n">${core ? "C" : i + 1}</span>
-    <input class="ltr f-name" value="${r[0] || ""}" placeholder="Exercise"><input class="ltr f-mus" value="${r[1] || ""}" placeholder="Hamstrings">
-    <input class="ltr f-sets" value="${r[2] || ""}"><input class="ltr f-reps" value="${r[3] || ""}"><input class="ltr f-rest" value="${r[4] || ""}">
-    <input class="ltr f-note" value="${(r[5] || "").replace(/"/g, "&quot;")}"><input class="ltr f-vid" value="${r[6] || ""}" placeholder="https://youtu.be/…">
-    <input type="checkbox" class="f-side" ${r[7] ? "checked" : ""}>${core ? "<span></span>" : `<button class="del" type="button" aria-label="حذف">✕</button>`}
-    ${core ? "" : `<div class="alt"><span>بديل للسيدات (اختياري):</span><input class="ltr a-name" value="${(r[8] && r[8][0]) || ""}" placeholder="Exercise for women"><input class="ltr a-reps" value="${(r[8] && r[8][1]) || ""}" placeholder="reps"><input class="ltr a-note" value="${((r[8] && r[8][2]) || "").replace(/"/g, "&quot;")}" placeholder="note"><input class="ltr a-vid" value="${(r[8] && r[8][3]) || ""}" placeholder="video link"></div>`}</div>`;
-  function fill(rows, core) {
-    $("rows").innerHTML = rows.map((r, i) => rowHTML(r, i)).join("");
-    $("corerow").innerHTML = rowHTML(core, 0, true);
-    renum();
-  }
+  const LEG_DAY = {
+    name: "Leg Day", subtitle: "Hamstrings first · Glutes · Quads · Calves", warmup: "5 min easy bike + 15 glute bridges + 10 bodyweight squats",
+    exercises: [
+      { name: "Seated Leg Curl", muscles: ["Hamstrings"], sets: 3, reps: "12–15", rest: "60 sec", note: "Hamstrings first. Slow 3-second lowering, toes pointed up." },
+      { name: "Dumbbell Romanian Deadlift", muscles: ["Hamstrings", "Glutes"], sets: 3, reps: "10–12", rest: "90 sec", note: "Push the hips back, dumbbells close to the legs, back flat." },
+      { name: "Hip Thrust Machine", muscles: ["Glutes"], sets: 3, reps: "10–12", rest: "90 sec", note: "Chin tucked, squeeze the glutes 2 seconds at the top.", video: "https://www.youtube.com/shorts/CO3V68I7CbE?feature=share" },
+      { name: "Hack Squat", muscles: ["Quads", "Glutes"], sets: 3, reps: "10–12", rest: "90 sec", note: "Feet shoulder-width, go as deep as you control. (Replaces the leg press.)",
+        alt: { f: { name: "Swiss Ball Wall Squat", reps: "12–15", note: "Ball between your lower back and the wall, feet a little forward. Sit down to knee level, push up through the heels.", video: "https://youtu.be/vujBdEdSj5M" } } },
+      { name: "Dumbbell Reverse Lunge", muscles: ["Quads", "Glutes"], sets: 2, reps: "10", rest: "60 sec", note: "Step back, front knee over the foot. Reps per leg.", perSide: true },
+      { name: "Leg Extension", muscles: ["Quads"], sets: 3, reps: "12–15", rest: "60 sec", note: "Pause 1 second at the top." },
+      { name: "Hip Abduction Machine", muscles: ["Abductors", "Glutes"], sets: 3, reps: "15–20", rest: "45 sec", note: "Lean slightly forward, push the knees out and hold 1 second." },
+      { name: "Standing Calf Raise", muscles: ["Calves"], sets: 3, reps: "15", rest: "45 sec", note: "Full stretch at the bottom, pause at the top." },
+      { name: "Tibialis Raise", muscles: ["Tibialis"], sets: 3, reps: "15–20", rest: "45 sec", note: "Back against the wall, heels about a foot forward. Lift the toes as high as you can, lower slowly." }
+    ],
+    core: { name: "Dead Bug", muscles: ["Core"], sets: 3, reps: "10", rest: "45 sec", note: "Lower back pressed into the floor. Reps per side.", perSide: true },
+    cardio: { machine: "Treadmill — incline walk", minutes: "20", speed: "5.5", incline: "6" }
+  };
+  const blankDay = n => ({ name: "Day " + n, subtitle: "", warmup: "", exercises: [], core: null, cardio: null });
+  let days = [JSON.parse(JSON.stringify(LEG_DAY))], cur = 0;
+
+  const v = s => String(s ?? "").replace(/"/g, "&quot;");
+  const planTxt = p => (p || []).map(x => `${x[0] || "BW"}x${x[1]}`).join(", ");
+  const parsePlan = s => s.split(",").map(x => x.trim()).filter(Boolean).map(x => { const [k, r] = x.split(/\s*[x×*]\s*/i); return [/^bw$/i.test(k || "") ? "" : (k || "").trim(), (r || "").trim()]; });
+  const rowHTML = (e, i, core) => { e = e || {}; const a = (e.alt && e.alt.f) || {};
+    return `<div class="er" data-core="${core ? 1 : 0}"><span class="n">${core ? "C" : i + 1}</span>
+    <input class="ltr f-name" value="${v(e.name)}" placeholder="Exercise"><input class="ltr f-mus" value="${v((e.muscles || []).join(", "))}" placeholder="Chest, Triceps">
+    <input class="ltr f-sets" value="${v(e.sets)}"><input class="ltr f-reps" value="${v(e.reps)}"><input class="ltr f-rest" value="${v(e.rest)}">
+    <input class="ltr f-note" value="${v(e.note)}"><input class="ltr f-plan" value="${v(planTxt(e.plan))}" placeholder="20x12, 25x10"><input class="ltr f-vid" value="${v(e.video)}" placeholder="https://youtu.be/…">
+    <input type="checkbox" class="f-side" ${e.perSide ? "checked" : ""}>${core ? "<span></span>" : `<button class="del" type="button" aria-label="حذف">✕</button>`}
+    ${core ? "" : `<div class="alt"><span>بديل للسيدات (اختياري):</span><input class="ltr a-name" value="${v(a.name)}" placeholder="Exercise for women"><input class="ltr a-reps" value="${v(a.reps)}" placeholder="reps"><input class="ltr a-note" value="${v(a.note)}" placeholder="note"><input class="ltr a-vid" value="${v(a.video)}" placeholder="video link"></div>`}</div>`; };
+  const readRow = el => { const q = c => el.querySelector(c); const e = { name: q(".f-name").value.trim(), muscles: q(".f-mus").value.split(",").map(s => s.trim()).filter(Boolean),
+      sets: +q(".f-sets").value || 0, reps: q(".f-reps").value.trim(), rest: q(".f-rest").value.trim(), note: q(".f-note").value.trim(), video: q(".f-vid").value.trim(), perSide: q(".f-side").checked };
+    const pl = parsePlan(q(".f-plan").value); if (pl.length) e.plan = pl;
+    if (q(".a-name") && q(".a-name").value.trim()) e.alt = { f: { name: q(".a-name").value.trim(), reps: q(".a-reps").value.trim(), note: q(".a-note").value.trim(), video: q(".a-vid").value.trim() } };
+    return e; };
+
   function renum() { [...$("rows").children].forEach((el, i) => el.querySelector(".n").textContent = i + 1); }
+  function saveCur() {
+    const D = days[cur]; D.name = $("title").value.trim(); D.subtitle = $("subtitle").value.trim(); D.warmup = $("warmup").value.trim();
+    D.exercises = [...$("rows").children].map(readRow).filter(e => e.name);
+    const c = readRow($("corerow").firstElementChild); D.core = c.name ? c : null;
+    D.cardio = $("cmin").value.trim() ? { machine: $("cm").value.trim(), minutes: $("cmin").value.trim(), speed: $("cs").value.trim(), incline: $("ci").value.trim() } : null;
+  }
+  function loadDay(i) {
+    cur = i; const D = days[i];
+    $("title").value = D.name || ""; $("subtitle").value = D.subtitle || ""; $("warmup").value = D.warmup || "";
+    $("rows").innerHTML = (D.exercises || []).map((e, j) => rowHTML(e, j)).join("");
+    $("corerow").innerHTML = rowHTML(D.core, 0, true);
+    const c = D.cardio || {}; $("cm").value = c.machine || ""; $("cmin").value = c.minutes || ""; $("cs").value = c.speed || ""; $("ci").value = c.incline || "";
+    renum(); tabs();
+  }
+  function tabs() {
+    $("tabs").innerHTML = days.map((d, i) => `<button type="button" class="tab${i === cur ? " on" : ""}" data-t="${i}">${i + 1}. ${d.name || "Day " + (i + 1)}</button>`).join("")
+      + `<button type="button" class="tab" id="addday">+ يوم</button>` + (days.length > 1 ? `<button type="button" class="tab" id="delday" style="color:var(--bad)">✕ احذف اليوم ده</button>` : "");
+  }
+  $("tabs").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return; saveCur();
+    if (b.id === "addday") { days.push(blankDay(days.length + 1)); loadDay(days.length - 1); }
+    else if (b.id === "delday") { days.splice(cur, 1); loadDay(Math.max(0, cur - 1)); }
+    else loadDay(+b.dataset.t);
+  });
   $("rows").addEventListener("click", e => { if (e.target.classList.contains("del")) { e.target.closest(".er").remove(); renum(); } });
-  $("add").addEventListener("click", () => { $("rows").insertAdjacentHTML("beforeend", rowHTML(["", "", 3, "10–12", "60 sec", "", "", false], 0)); renum(); });
-  const readRow = el => ({ name: el.querySelector(".f-name").value.trim(), muscles: el.querySelector(".f-mus").value.split(",").map(s => s.trim()).filter(Boolean),
-    sets: +el.querySelector(".f-sets").value || 0, reps: el.querySelector(".f-reps").value.trim(), rest: el.querySelector(".f-rest").value.trim(),
-    note: el.querySelector(".f-note").value.trim(), video: el.querySelector(".f-vid").value.trim(), perSide: el.querySelector(".f-side").checked,
-    ...(el.querySelector(".a-name") && el.querySelector(".a-name").value.trim() ? { alt: { f: { name: el.querySelector(".a-name").value.trim(), reps: el.querySelector(".a-reps").value.trim(),
-      note: el.querySelector(".a-note").value.trim(), video: el.querySelector(".a-vid").value.trim() } } } : {}) });
+  $("add").addEventListener("click", () => { $("rows").insertAdjacentHTML("beforeend", rowHTML({ sets: 3, reps: "10–12", rest: "60 sec" }, 0)); renum(); });
+
   function build() {
-    const ex = [...$("rows").children].map(readRow).filter(e => e.name);
-    const c = readRow($("corerow").firstElementChild);
+    saveCur();
     if (!$("client").value.trim()) { $("err").textContent = "اكتب اسم العميل."; return null; }
-    if (!ex.length) { $("err").textContent = "ضيف تمرين واحد على الأقل."; return null; }
+    const empty = days.findIndex(d => !d.exercises.length);
+    if (empty >= 0) { $("err").textContent = `اليوم ${empty + 1} مفيهوش تمارين.`; return null; }
     $("err").textContent = "";
-    return { client: $("client").value.trim(), gender: $("gender").value, title: $("title").value.trim(), subtitle: $("subtitle").value.trim(), warmup: $("warmup").value.trim(),
-      exercises: ex, core: c.name ? c : null,
-      cardio: $("cmin").value.trim() ? { machine: $("cm").value.trim(), minutes: $("cmin").value.trim(), speed: $("cs").value.trim(), incline: $("ci").value.trim() } : null,
-      notes: $("notes").value.split("\n").map(s => s.trim()).filter(Boolean), made: new Date().toISOString().slice(0, 10) };
+    const base = { client: $("client").value.trim(), gender: $("gender").value, notes: $("notes").value.split("\n").map(s => s.trim()).filter(Boolean),
+      restNote: $("restNote").value.trim(), made: new Date().toISOString().slice(0, 10) };
+    if (days.length === 1) { const D = days[0]; return { ...base, title: D.name, subtitle: D.subtitle, warmup: D.warmup, exercises: D.exercises, core: D.core, cardio: D.cardio }; }
+    return { ...base, days: days.map(d => ({ ...d })) };
   }
   $("gen").addEventListener("click", () => {
     const abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint8Array(6));
@@ -161,7 +201,7 @@ Drink water between exercises.</textarea></div>
   $("make").addEventListener("click", async () => {
     const W = build(); if (!W) return;
     const code = Vault.normCode($("code").value);
-    if (code.length < 6) { $("err").textContent = "الكود لازم يكون 6 حروف/أرقام على الأقل. دوس «كود جديد»."; return; }
+    if (code.length < 6) { $("err").textContent = "الكود لازم يكون 6 حروف/أرقام على الأقل. دوس «كود جديد» أو اكتب كود العميل."; return; }
     $("code").value = code;
     const id = await Vault.reportId(code), file = await Vault.encryptReport(code, W);
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(file)], { type: "application/json" })); a.download = id + ".json";
@@ -172,14 +212,13 @@ Drink water between exercises.</textarea></div>
   $("oldfile").addEventListener("change", async () => {
     const f = $("oldfile").files[0], code = Vault.normCode($("oldcode").value); if (!f) return;
     try { const W = await Vault.decryptReport(code, JSON.parse(await f.text()));
-      $("client").value = W.client; $("code").value = code; $("gender").value = W.gender || "f"; $("title").value = W.title || ""; $("subtitle").value = W.subtitle || ""; $("warmup").value = W.warmup || "";
-      const toRow = e => [e.name, (e.muscles || []).join(", "), e.sets, e.reps, e.rest, e.note, e.video, e.perSide, e.alt && e.alt.f ? [e.alt.f.name, e.alt.f.reps, e.alt.f.note, e.alt.f.video] : null];
-      fill(W.exercises.map(toRow), W.core ? toRow(W.core) : ["", "", "", "", "", "", "", false]);
-      if (W.cardio) { $("cm").value = W.cardio.machine || ""; $("cmin").value = W.cardio.minutes || ""; $("cs").value = W.cardio.speed || ""; $("ci").value = W.cardio.incline || ""; }
-      $("notes").value = (W.notes || []).join("\n"); $("err").textContent = "";
+      $("client").value = W.client; $("code").value = code; $("gender").value = W.gender || "f"; $("restNote").value = W.restNote || "";
+      $("notes").value = (W.notes || []).join("\n");
+      days = W.days ? W.days.map(d => ({ ...d })) : [{ name: W.title, subtitle: W.subtitle, warmup: W.warmup, exercises: W.exercises, core: W.core, cardio: W.cardio }];
+      loadDay(0); $("err").textContent = "";
     } catch (e) { $("err").textContent = "الكود مش مطابق للملف ده."; }
   });
-  fill(TEMPLATE, CORE);
+  loadDay(0);
   document.documentElement.dataset.g = $("gender").value;
 })();
 </script>

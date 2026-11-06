@@ -5,6 +5,17 @@
   const num = v => { const n = parseFloat(String(v ?? "").replace(",", ".")); return isNaN(n) ? null : n; };
   const yt = e => e.video || ("https://www.youtube.com/results?search_query=" + encodeURIComponent(e.name + " exercise proper form"));
   const restSec = r => { const m = String(r || "").match(/(\d+(?:\.\d+)?)\s*(min|m\b)?/i); if (!m) return 60; return m[2] ? Math.round(+m[1] * 60) : +m[1]; };
+  const slug = n => String(n || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const photosOf = e => (e.photo ? [].concat(e.photo) : ((window.PHOTOS || {})[slug(e.name)] || [])).map(f => /^https?:|\//.test(f) ? f : "images/" + f);
+  function lightbox(srcs, title) {
+    let box = document.getElementById("lightbox");
+    if (!box) { box = document.createElement("div"); box.id = "lightbox"; box.setAttribute("role", "dialog"); box.setAttribute("aria-modal", "true"); document.body.appendChild(box);
+      box.addEventListener("click", e => { if (e.target === box || e.target.closest(".lbclose")) box.hidden = true; });
+      document.addEventListener("keydown", e => { if (e.key === "Escape") box.hidden = true; }); }
+    box.innerHTML = `<div class="lbin"><div class="lbhead"><b dir="ltr">${esc(title)}</b><button type="button" class="lbclose" aria-label="Close">✕</button></div>
+      <div class="lbimgs">${srcs.map(s => `<img src="${esc(s)}" alt="${esc(title)}" loading="lazy" draggable="false">`).join("")}</div></div>`;
+    box.hidden = false; box.querySelector(".lbclose").focus();
+  }
   const today = () => new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
   const store = {
@@ -26,7 +37,7 @@
     pill.querySelector("button").onclick = () => { clearInterval(timer); pill.hidden = true; };
   }
 
-  function render(root, W, id, gender, onBack) {
+  function renderDay(root, W, id, gender, onBack, tabs) {
     const log = store.get(id);
     const td = today(), tail = log.sessions[log.sessions.length - 1];
     const todaySess = tail && tail.d === td ? tail : null;
@@ -44,12 +55,12 @@
     const card = e => {
       const prev = last && last.ex[e.key];
       const rows = Array.from({ length: +e.sets || 0 }, (_, s) => {
-        const d = (draft.ex[e.key] || [])[s] || ["", "", false], p = prev && prev[s];
+        const d = (draft.ex[e.key] || [])[s] || ["", "", false], p = prev && prev[s], pl = e.plan && e.plan[s];
         return `<div class="srow${d[2] ? " done" : ""}" data-s="${s}" dir="ltr">
           <span class="sn">${s + 1}</span>
-          <label class="fld"><input inputmode="decimal" class="kg" value="${esc(d[0])}" placeholder="${p && p[0] !== "" && p[0] != null ? esc(p[0]) : "—"}" aria-label="${t("set")} ${s + 1} ${t("kg")}"><em>${t("kg")}</em></label>
+          <label class="fld"><input inputmode="decimal" class="kg" value="${esc(d[0])}" placeholder="${p && p[0] !== "" && p[0] != null ? esc(p[0]) : pl && pl[0] ? esc(pl[0]) : "—"}" aria-label="${t("set")} ${s + 1} ${t("kg")}"><em>${t("kg")}</em></label>
           <span class="x">×</span>
-          <label class="fld"><input inputmode="numeric" class="rp" value="${esc(d[1])}" placeholder="${p && p[1] ? esc(p[1]) : esc(String(e.reps).split(/[–-]/)[0])}" aria-label="${t("set")} ${s + 1} ${t("rp")}"><em>${t("rp")}</em></label>
+          <label class="fld"><input inputmode="numeric" class="rp" value="${esc(d[1])}" placeholder="${p && p[1] ? esc(p[1]) : pl && pl[1] ? esc(pl[1]) : esc(String(e.reps).split(/[–-]/)[0])}" aria-label="${t("set")} ${s + 1} ${t("rp")}"><em>${t("rp")}</em></label>
           <button type="button" class="tick" aria-pressed="${!!d[2]}" aria-label="${t("set")} ${s + 1} done"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5 9-10"/></svg></button>
         </div>`; }).join("");
       const lastTxt = prev ? prev.filter(x => x && (x[0] !== "" || x[1] !== "")).map(x => `${x[0] || "BW"}×${x[1] || "–"}`).join("  ·  ") : "";
@@ -64,9 +75,11 @@
           <span class="bd"><b>${esc(e.sets)}</b>${t("sets")}</span>
           <span class="bd"><b dir="ltr">${esc(e.reps)}</b>${t("reps")}${e.perSide ? ` · ${t("perSide")}` : ""}</span>
           <span class="bd"><b dir="ltr">${esc(e.rest || "60 sec")}</b>${t("rest")}</span>
+          ${photosOf(e).length ? `<button type="button" class="vid pho" data-ph="${esc(JSON.stringify(photosOf(e)))}" data-tt="${esc(e.name)}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="m21 16-5-5-8 8"/></svg>${t("photo")}</button>` : ""}
           <a class="vid" href="${esc(yt(e))}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4" fill="#ff0033"/><path d="M10 9v6l5-3z" fill="#fff"/></svg>${t("video")}</a>
         </div>
         ${e.note ? `<p class="cue" dir="ltr">${esc(e.note)}</p>` : ""}
+        ${e.plan && e.plan.length ? `<p class="planline"><span>${t("plan")}:</span> <b dir="ltr">${esc(e.plan.map(x => `${x[0] || "BW"}×${x[1]}`).join("  ·  "))}</b></p>` : ""}
         <p class="lastline">${prev ? `<span>${t("last")}:</span> <b dir="ltr">${esc(lastTxt)}</b>` : `<span>${t("firstTime")}</span>`}</p>
         <div class="sets">${rows}</div>
         <div class="exfoot"><button type="button" class="restbtn" data-sec="${restSec(e.rest)}">⏱ ${t("restBtn", { s: restSec(e.rest) })}</button><span class="cmp" aria-live="polite"></span></div>
@@ -86,6 +99,7 @@
           </div>
           <div class="whero-fig">${Anatomy.figure("back", allMus, gender, { cls: "lg" })}${Anatomy.figure("front", allMus, gender, { cls: "lg" })}</div>
         </section>
+        ${tabs || ""}
         <div class="prog" id="prog"><div class="bar"><i id="pbar"></i></div><span id="ptxt"></span></div>
         <article class="warm"><span class="wic" aria-hidden="true">🔥</span><div><h3>${t("warmup")}</h3><p dir="${W.warmup ? "ltr" : "auto"}">${esc(W.warmup || t("warmupDef"))}</p></div></article>
         <div class="exlist">${list.map(card).join("")}</div>
@@ -128,6 +142,7 @@
           sync(now); if (now) restTimer(+cardEl.querySelector(".restbtn").dataset.sec); });
       });
       cardEl.querySelector(".restbtn").addEventListener("click", e => restTimer(+e.currentTarget.dataset.sec));
+      const ph = cardEl.querySelector(".pho"); if (ph) ph.addEventListener("click", () => lightbox(JSON.parse(ph.dataset.ph), ph.dataset.tt));
     });
     const cdt = root.querySelector("#cdtick");
     if (cdt) cdt.addEventListener("click", () => { draft.cardio = !draft.cardio; cdt.setAttribute("aria-pressed", String(draft.cardio)); root.querySelector("#cardio").classList.toggle("done", draft.cardio); saveDraft(); progress(); });
@@ -145,6 +160,23 @@
       document.body.classList.add("party"); setTimeout(() => document.body.classList.remove("party"), 1600);
     });
     progress();
+  }
+  function render(root, W, id, gender, onBack) {
+    if (!W.days || !W.days.length) return renderDay(root, W, id, gender, onBack, "");
+    let idx = 0;
+    try { idx = +localStorage.getItem("amw-day:" + id) || 0; } catch (e) {}
+    if (idx >= W.days.length) idx = 0;
+    const go = (i, jump) => {
+      try { localStorage.setItem("amw-day:" + id, String(i)); } catch (e) {}
+      const D = W.days[i];
+      const merged = { ...W, exercises: D.exercises || [], core: D.core || null, cardio: D.cardio || null, warmup: D.warmup || W.warmup,
+        title: D.name || W.title, subtitle: D.subtitle || "", notes: [...(D.notes || []), ...(W.notes || [])] };
+      const tabs = `<nav class="daytabs" aria-label="${t("days")}">${W.days.map((d, j) => `<button type="button" class="dtab${j === i ? " on" : ""}" data-day="${j}" aria-pressed="${j === i}"><b>${t("dayN", { n: j + 1 })}</b><small dir="ltr">${esc(d.name || "")}</small></button>`).join("")}</nav>${W.restNote ? `<p class="restnote" dir="ltr">${esc(W.restNote)}</p>` : ""}`;
+      renderDay(root, merged, id + ":d" + i, gender, onBack, tabs);
+      root.querySelectorAll(".dtab").forEach(b => b.addEventListener("click", () => go(+b.dataset.day, true)));
+      if (jump) { const n = root.querySelector(".daytabs"); n && n.scrollIntoView({ block: "start" }); }
+    };
+    go(idx, false);
   }
   window.Workout = { render };
 })();
